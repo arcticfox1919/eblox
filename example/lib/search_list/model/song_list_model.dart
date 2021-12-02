@@ -2,7 +2,7 @@
 
 import 'dart:collection';
 
-import 'package:eblox/blox.dart';
+import 'package:eblox/eblox.dart';
 
 class SongListModel with BloxData{
 

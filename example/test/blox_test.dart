@@ -1,5 +1,5 @@
 
-import 'package:eblox/blox.dart';
+import 'package:eblox/eblox.dart';
 import 'package:example/counter/blox/counter_view_model.dart';
 import 'package:flutter_test/flutter_test.dart';
 

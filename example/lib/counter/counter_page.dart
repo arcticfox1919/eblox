@@ -1,5 +1,5 @@
 
-import 'package:eblox/blox.dart';
+import 'package:eblox/eblox.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 

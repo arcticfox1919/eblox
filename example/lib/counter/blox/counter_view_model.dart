@@ -1,7 +1,7 @@
 
 
-import 'package:eblox/blox.dart';
-import 'package:eblox_annotation/blox.dart';
+import 'package:eblox/eblox.dart';
+import 'package:eblox_annotation/eblox_annotation.dart';
 import 'package:flutter/cupertino.dart';
 
 part 'counter_view_model.g.dart';

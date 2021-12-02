@@ -1,4 +1,4 @@
-import 'package:eblox/blox.dart';
+import 'package:eblox/eblox.dart';
 import 'package:example/search_list/blox/search_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
