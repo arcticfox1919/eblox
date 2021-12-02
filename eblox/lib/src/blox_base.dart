@@ -142,6 +142,12 @@ class _BloxBase<T extends Blox> extends StatefulWidget {
     return Container();
   }
 
+  void dispose(){
+    if (I.check<T>()) {
+      I.delete<T>();
+    }
+  }
+
   @override
   _BloxBaseState createState() => _BloxBaseState();
 }
@@ -159,7 +165,7 @@ class _BloxBaseState extends State<_BloxBase> {
   void dispose() {
     _unsubscribe();
     widget.blox.dispose();
-    if (I.check(instance: widget.blox)) I.delete(instance: widget.blox);
+    widget.dispose();
     super.dispose();
   }
 
