@@ -138,7 +138,7 @@ Will generate `ColorState`.
 
 
 
-An @AsyncX annotation is also currently provided to decorate asynchronous state:
+An `@AsyncX` annotation is also currently provided to decorate asynchronous state:
 
 ```dart
 part 'search_view_model.g.dart';
