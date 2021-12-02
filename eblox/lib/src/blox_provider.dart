@@ -1,7 +1,6 @@
 import 'package:get_it/get_it.dart';
 
 abstract class Provider {
-
   void put<T extends Object>(T dependency, {String? tag});
 
   T find<T extends Object>({String? tag});
@@ -11,8 +10,7 @@ abstract class Provider {
   bool delete<T extends Object>({T? instance, String? tag});
 }
 
-
-class SimpleProvider implements Provider{
+class SimpleProvider implements Provider {
   factory SimpleProvider() => _instance ??= SimpleProvider._();
 
   static SimpleProvider? _instance;
@@ -21,17 +19,15 @@ class SimpleProvider implements Provider{
 
   static final Map<Symbol, _InstanceInfo> _single = {};
 
-
   @override
   void put<T extends Object>(T dependency, {String? tag}) {
     final key = _getKey(T, tag);
     _single.putIfAbsent(key, () => _InstanceInfo<T>(dependency));
   }
 
-
   @override
   T find<T extends Object>({String? tag}) {
-    final newKey =  _getKey(T, tag);
+    final newKey = _getKey(T, tag);
     var info = _single[newKey];
 
     if (info?.value != null) {
@@ -42,7 +38,7 @@ class SimpleProvider implements Provider{
   }
 
   @override
-  bool delete<T extends Object>({T? instance,String? tag}) {
+  bool delete<T extends Object>({T? instance, String? tag}) {
     final newKey = _getKey(T, tag);
     if (!_single.containsKey(newKey)) {
       return false;
@@ -56,7 +52,7 @@ class SimpleProvider implements Provider{
   }
 
   @override
-  bool check<T extends Object>({T? instance,String? tag}) {
+  bool check<T extends Object>({T? instance, String? tag}) {
     throw UnimplementedError();
   }
 }
@@ -67,24 +63,19 @@ class _InstanceInfo<T> {
   T value;
 }
 
-
 const BloxProvider I = BloxProvider();
 
-
-T $<T extends Object>({String? tag}){
+T $<T extends Object>({String? tag}) {
   return I.find<T>(tag: tag);
 }
 
-
-
 final getIt = GetIt.instance;
 
-class BloxProvider implements Provider{
-
+class BloxProvider implements Provider {
   const BloxProvider();
 
   @override
-  bool delete<T extends Object>({T? instance,String? tag}) {
+  bool delete<T extends Object>({T? instance, String? tag}) {
     getIt.unregister<T>(instanceName: tag);
     return true;
   }
@@ -96,12 +87,11 @@ class BloxProvider implements Provider{
 
   @override
   void put<T extends Object>(T dependency, {String? tag}) {
-    getIt.registerSingleton<T>(dependency,instanceName: tag);
+    getIt.registerSingleton<T>(dependency, instanceName: tag);
   }
 
   @override
-  bool check<T extends Object>({T? instance,String? tag}) {
+  bool check<T extends Object>({T? instance, String? tag}) {
     return getIt.isRegistered<T>(instanceName: tag);
   }
-
 }

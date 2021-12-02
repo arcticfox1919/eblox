@@ -28,6 +28,10 @@ class BloXVisitor extends SimpleElementVisitor<void> {
   @override
   void visitConstructorElement(ConstructorElement element) {
     className = element.type.returnType.toString();
+    if(!className!.startsWith('_')){
+      throw Exception(
+          'Please use the "_" prefix to declare the [$className] !');
+    }
   }
 
   @override

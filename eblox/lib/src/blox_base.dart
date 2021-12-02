@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:eblox/src/blox_data.dart';
 import 'package:eblox/src/blox_provider.dart';
 import 'package:flutter/widgets.dart';
 import 'dart:math' as math;
@@ -23,52 +24,52 @@ abstract class BloxAction {
   }
 }
 
-enum BloxStatus{
-  idle,loading,error,ok,none
-}
+enum BloxStatus {loading, error, ok, none }
 
-abstract class BloxState<T>{}
+abstract class BloxState<T> {}
 
-abstract class BloxSingleState<T> extends BloxState{
+abstract class BloxSingleState<T> extends BloxState {
   T data;
 
   BloxSingleState(this.data);
 }
 
-abstract class BloxAsyncState<T> extends BloxSingleState<T>{
+abstract class BloxAsyncState<T> extends BloxSingleState<T> {
   BloxAsyncState(T data) : super(data);
 
-  BloxStatus status = BloxStatus.idle;
+  BloxStatus status = BloxStatus.none;
 
   dynamic errorMessage;
 
-  BloxAsyncState<T> copy({T? data,BloxStatus? status,dynamic errorMessage});
+  BloxAsyncState<T> copy({T? data, BloxStatus? status, dynamic errorMessage});
 
-  bool isEmpty(){
+  bool isEmpty() {
     bool b = false;
-    if(data == null){
+    if (data == null) {
       b = true;
-    }else if(data is List){
+    } else if (data is List) {
       b = (data as List).isEmpty;
-    }else if(data is Map){
+    } else if (data is Map) {
       b = (data as Map).isEmpty;
-    }else if(data is Set){
+    } else if (data is Set) {
       b = (data as Set).isEmpty;
+    } else if(data is BloxData){
+      b = (data as BloxData).isEmpty;
     }
     return b;
   }
 }
 
+abstract class Blox {
+  final Map<Type, Function> _registry = {};
+  final Map<Type, BloxState> _states = {};
 
-abstract class Blox{
+  final StreamController<BloxState> _stateController =
+      StreamController.broadcast();
+  final StreamController<BloxAction> _actionController =
+      StreamController.broadcast();
 
-  final Map<Type,Function> _registry = {};
-  final Map<Type,BloxState> _states = {};
-
-  final StreamController<BloxState> _stateController = StreamController.broadcast();
-  final StreamController<BloxAction> _actionController = StreamController.broadcast();
-
-  Blox(){
+  Blox() {
     _onAction();
   }
 
@@ -88,27 +89,27 @@ abstract class Blox{
     });
   }
 
-  void registerState(Map<Type,BloxState> states){
+  void registerState(Map<Type, BloxState> states) {
     _states.addAll(states);
   }
 
-  void registerAction(Map<Type,Function> registry){
+  void registerAction(Map<Type, Function> registry) {
     _registry.addAll(registry);
   }
 
   bool handleAction(BloxAction action) => false;
 
-  void add(BloxAction action){
-    if(_actionController.isClosed) return;
+  void add(BloxAction action) {
+    if (_actionController.isClosed) return;
     _actionController.add(action);
   }
 
-  void emit(BloxState state){
-    if(_stateController.isClosed) return;
+  void emit(BloxState state) {
+    if (_stateController.isClosed) return;
     _stateController.add(state);
   }
 
-  void dispose(){
+  void dispose() {
     _stateController.close();
     _actionController.close();
   }
@@ -116,17 +117,17 @@ abstract class Blox{
 
 // ignore: must_be_immutable
 class _BloxBase<T extends Blox> extends StatefulWidget {
-
   Stream<BloxState>? stream;
   late final Blox blox;
   bool unpack;
 
-  _BloxBase({Key? key,T Function()? create,this.unpack = true}) : super(key: key){
-    if(I.check<T>()){
+  _BloxBase({Key? key, T Function()? create, this.unpack = true})
+      : super(key: key) {
+    if (I.check<T>()) {
       blox = I.find<T>();
-    }else{
+    } else {
       assert(create != null);
-      var _blox =  create!();
+      var _blox = create!();
       I.put(_blox);
       blox = _blox;
     }
@@ -135,9 +136,11 @@ class _BloxBase<T extends Blox> extends StatefulWidget {
 
   bool condition(BloxState state) => false;
 
-  void onListen(BloxState state){}
+  void onListen(BloxState state) {}
 
-  Widget build(){return Container();}
+  Widget build() {
+    return Container();
+  }
 
   @override
   _BloxBaseState createState() => _BloxBaseState();
@@ -156,12 +159,12 @@ class _BloxBaseState extends State<_BloxBase> {
   void dispose() {
     _unsubscribe();
     widget.blox.dispose();
-    if(I.check(instance: widget.blox)) I.delete(instance: widget.blox);
+    if (I.check(instance: widget.blox)) I.delete(instance: widget.blox);
     super.dispose();
   }
 
   void _subscribe() {
-    if(widget.stream != null){
+    if (widget.stream != null) {
       var stream = widget.stream!.where((state) {
         return widget.condition(state);
       });
@@ -189,41 +192,45 @@ class _BloxBaseState extends State<_BloxBase> {
 
 typedef BloxStateFilter = List<Type> Function();
 
-
 // ignore: must_be_immutable
-class MultiBuilder<T extends Blox> extends _BloxBase<T>{
+class MultiBuilder<T extends Blox> extends _BloxBase<T> {
   final BloxStateFilter filter;
   final Function builder;
-  final Map<Type,BloxState> states = {};
+  final Map<Type, BloxState> states = {};
 
-
-  MultiBuilder({Key? key,required this.filter,required this.builder,bool unpack=true}) : super(key: key,unpack: unpack){
+  MultiBuilder(
+      {Key? key,
+      required this.filter,
+      required this.builder,
+      T Function()? create,
+      bool unpack = true})
+      : super(key: key, unpack: unpack, create: create) {
     for (var type in filter()) {
       states[type] = blox._states[type]!;
     }
   }
 
   @override
-  void onListen(BloxState state){
-    for(var type in states.keys){
-      if(_compare(state.runtimeType, type)){
+  void onListen(BloxState state) {
+    for (var type in states.keys) {
+      if (_compare(state.runtimeType, type)) {
         states[type] = state;
       }
     }
   }
 
   @override
-  bool condition(BloxState state){
-    return filter().every((type)=> _compare(state.runtimeType,type));
+  bool condition(BloxState state) {
+    return filter().every((type) => _compare(state.runtimeType, type));
   }
 
-  bool _compare(Type current,Type restrict){
+  bool _compare(Type current, Type restrict) {
     var cur = current.toString();
     var res = restrict.toString();
-    var len = math.min(cur.length,res.length);
-    for(var i = 0;i<len;i++){
-      if(cur[i] == '<' || res[i] == '<') break;
-      if(cur[i] != res[i]) return false;
+    var len = math.min(cur.length, res.length);
+    for (var i = 0; i < len; i++) {
+      if (cur[i] == '<' || res[i] == '<') break;
+      if (cur[i] != res[i]) return false;
     }
     return true;
   }
@@ -232,35 +239,38 @@ class MultiBuilder<T extends Blox> extends _BloxBase<T>{
   Widget build() {
     return Function.apply(
         builder,
-        states.values.map((e){
-          if(unpack && e is BloxSingleState){
+        states.values.map((e) {
+          if (unpack && e is BloxSingleState) {
             return e.data;
           }
           return e;
-        }).toList()
-    );
+        }).toList());
   }
 }
 
 // ignore: must_be_immutable
-class BloxBuilder<T extends Blox,S extends BloxState> extends _BloxBase<T> {
-
+class BloxBuilder<T extends Blox, S extends BloxState> extends _BloxBase<T> {
   late S currentState;
   final Function builder;
 
-  BloxBuilder({Key? key,required this.builder,bool unpack=true}) : super(key: key,unpack: unpack){
+  BloxBuilder(
+      {Key? key,
+      T Function()? create,
+      required this.builder,
+      bool unpack = true})
+      : super(key: key, create: create, unpack: unpack) {
     for (var state in blox._states.values) {
-      if(state is S) currentState = state;
+      if (state is S) currentState = state;
     }
   }
 
   @override
-  void onListen(BloxState state){
+  void onListen(BloxState state) {
     currentState = state as S;
   }
 
   @override
-  bool condition(BloxState state){
+  bool condition(BloxState state) {
     return state is S;
   }
 
