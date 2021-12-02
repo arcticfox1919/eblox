@@ -1,0 +1,15 @@
+targets:
+  $default:
+    builders:
+      eblox_generator|eblox_annotation:
+        enabled: true
+
+builders:
+  eblox_generator:
+    target: ":eblox_generator"
+    import: "package:eblox_generator/generators.dart"
+    builder_factories: ["generateAction","generateState","generateBloX"]
+    build_extensions: { ".dart": [".g.dart"] }
+    auto_apply: dependents
+    build_to: cache
+    applies_builders: ["source_gen|combining_builder"]
