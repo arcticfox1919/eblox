@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 
 import 'blox_base.dart';
+import 'blox_state.dart';
 
 class BloxView<T extends Blox, S extends BloxAsyncState>
     extends StatelessWidget {

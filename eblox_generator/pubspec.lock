@@ -158,9 +158,9 @@ packages:
   eblox_annotation:
     dependency: "direct main"
     description:
-      name: eblox_annotation
-      url: "https://pub.flutter-io.cn"
-    source: hosted
+      path: "../eblox_annotation"
+      relative: true
+    source: path
     version: "0.0.1"
   file:
     dependency: transitive

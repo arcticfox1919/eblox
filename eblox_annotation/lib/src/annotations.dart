@@ -15,10 +15,14 @@ class AsyncX extends StateBase{
 class ActionX{
     final String? name;
     final String bind;
-    final bool bindAsync;
-    const ActionX({this.name,required this.bind,this.bindAsync=false});
+    const ActionX({this.name,required this.bind});
 }
 
+class BindAsync{
+  const BindAsync();
+}
+
+const bindAsync = BindAsync();
 
 class BloX {
   const BloX();

@@ -172,24 +172,24 @@ packages:
   eblox:
     dependency: "direct main"
     description:
-      name: eblox
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "0.0.1"
+      path: "../eblox"
+      relative: true
+    source: path
+    version: "0.0.2"
   eblox_annotation:
     dependency: "direct main"
     description:
-      name: eblox_annotation
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "0.0.1"
+      path: "../eblox_annotation"
+      relative: true
+    source: path
+    version: "0.0.2"
   eblox_generator:
     dependency: "direct dev"
     description:
-      name: eblox_generator
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "0.0.1"
+      path: "../eblox_generator"
+      relative: true
+    source: path
+    version: "0.0.2"
   fake_async:
     dependency: transitive
     description:
@@ -480,4 +480,3 @@ packages:
     version: "3.1.0"
 sdks:
   dart: ">=2.14.0 <3.0.0"
-  flutter: ">=1.17.0"

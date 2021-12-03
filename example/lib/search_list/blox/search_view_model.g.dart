@@ -26,8 +26,9 @@ class SearchVModel extends _SearchVModel {
       __songModel.copy(data: _songModel);
 
   @override
-  Future<SongListModel> _search(String name) {
-    runZoned(() => Future(() => super._search(name)),
+  Future<SongListModel> Function() _search(String name) {
+    var task = super._search(name);
+    runZoned(task,
         zoneSpecification: ZoneSpecification(run: <R>(self, parent, zone, f) {
           __songModel.status = BloxStatus.loading;
           emit(__songModel.copy());
@@ -45,7 +46,7 @@ class SearchVModel extends _SearchVModel {
           debugPrint(error.toString());
           emit(__songModel.copy(errorMessage: error));
         }));
-    return Future.value(_songModel);
+    return task;
   }
 }
 

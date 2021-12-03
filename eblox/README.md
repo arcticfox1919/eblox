@@ -109,8 +109,6 @@ class CounterPage extends StatelessWidget {
 
 Derive a class from Blox, where we write business logic. This is the ViewModel in MVVM. Note that in order to facilitate annotation to generate code, the class must use the `_` prefix. Finally, we used the `@bloX` annotation on this class.
 
-
-
 `@StateX` is used to decorate the state we need, it will automatically generate a State class with a specified name for packaging the modified data:
 
 ```dart
@@ -132,11 +130,7 @@ Color _color = Colors.white;
 
 Will generate `ColorState`.
 
-
-
 `@ActionX` is used to generate the Action class, and the name can also be specified. The `bind` is used to specify which State class to associate this Action with. In addition, it also associates the decorated method with the generated Action, and this method is called when the Action is sent.
-
-
 
 An `@AsyncX` annotation is also currently provided to decorate asynchronous state:
 
@@ -149,9 +143,12 @@ class _SearchVModel extends Blox{
   @AsyncX(name: 'SongListState')
   SongListModel _songModel = SongListModel();
 
-  @ActionX(bind: 'SongListState',bindAsync: true)
-  Future<SongListModel> _search(String name){
-    return SearchService.search(name);
+  @bindAsync
+  @ActionX(bind: 'SongListState')
+  BloxAsyncTask<SongListModel> _search(String name){
+    return (){
+      return  SearchService.search(name);
+    };
   }
 }
 ```
@@ -168,7 +165,7 @@ class SearchAction extends BloxAction {
 }
 ```
 
-The method associated with the asynchronous state should always return a Future, which wraps the data that needs to be loaded asynchronously.
+To associate an **Action** method with an asynchronous state, you need to add another annotation `@bindAsync`. The method annotated by `@bindAsync` must return the type `BloxAsyncTask<T>`, and the generic `T` is the data we need to load asynchronously type.
 
 In the UI, you can use `BloxView` to handle asynchronous states:
 
@@ -221,11 +218,30 @@ class SearchPage extends StatelessWidget {
     );
   }
 }
-
 ```
 
-`BloxView` provides `onLoading`, `onEmpty`, `builder` to handle the UI display during and after loading.
+`BloxView` provides `onLoading`, `onEmpty`, `onError`,`builder` to handle the UI display during and after loading.
 
 ![](https://gitee.com/arcticfox1919/ImageHosting/raw/master/img/GIF2021-12-3_1-36-46.gif)
+
+Note that if you want `onEmpty` to be valid, then your custom data type should mixin `BloxData`:
+
+```dart
+class SongListModel with BloxData{
+
+  SongListModel({UnmodifiableListView<String>? songs}){
+    if(songs !=null) this.songs = songs;
+  }
+
+  UnmodifiableListView<String> songs = UnmodifiableListView([]);
+
+  @override
+  bool get isEmpty => songs.isEmpty;
+}
+```
+
+
+
+
 
 Please check [here](https://github.com/arcticfox1919/eblox/tree/main/example/lib) for detailed examples.

@@ -1,64 +1,14 @@
 import 'dart:async';
 
-import 'package:eblox/src/blox_data.dart';
 import 'package:eblox/src/blox_provider.dart';
 import 'package:flutter/widgets.dart';
 import 'dart:math' as math;
 
-abstract class BloxAction {
-  final List<dynamic>? positionalArguments;
-  final Map<String, dynamic>? namedArguments;
+import 'blox_action.dart';
+import 'blox_state.dart';
 
-  const BloxAction()
-      : positionalArguments = null,
-        namedArguments = null;
 
-  const BloxAction.argsByName(this.namedArguments) : positionalArguments = null;
-
-  const BloxAction.argsByPosition(this.positionalArguments)
-      : namedArguments = null;
-
-  void to<T extends Blox>() {
-    var blox = I.find<T>();
-    blox.add(this);
-  }
-}
-
-enum BloxStatus {loading, error, ok, none }
-
-abstract class BloxState<T> {}
-
-abstract class BloxSingleState<T> extends BloxState {
-  T data;
-
-  BloxSingleState(this.data);
-}
-
-abstract class BloxAsyncState<T> extends BloxSingleState<T> {
-  BloxAsyncState(T data) : super(data);
-
-  BloxStatus status = BloxStatus.none;
-
-  dynamic errorMessage;
-
-  BloxAsyncState<T> copy({T? data, BloxStatus? status, dynamic errorMessage});
-
-  bool isEmpty() {
-    bool b = false;
-    if (data == null) {
-      b = true;
-    } else if (data is List) {
-      b = (data as List).isEmpty;
-    } else if (data is Map) {
-      b = (data as Map).isEmpty;
-    } else if (data is Set) {
-      b = (data as Set).isEmpty;
-    } else if(data is BloxData){
-      b = (data as BloxData).isEmpty;
-    }
-    return b;
-  }
-}
+typedef BloxAsyncTask<T> = Future<T> Function();
 
 abstract class Blox {
   final Map<Type, Function> _registry = {};

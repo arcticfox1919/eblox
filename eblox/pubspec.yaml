@@ -1,6 +1,6 @@
 name: eblox
 description: An easy state management library.
-version: 0.0.1
+version: 0.0.2
 homepage: https://github.com/arcticfox1919/eblox
 
 environment:

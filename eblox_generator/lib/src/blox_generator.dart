@@ -69,7 +69,7 @@ class BloXVisitor extends SimpleElementVisitor<void> {
 
         actionFields[actionType] = '${element.displayName}';
         var bindState = ConstantReader(annotation).read('bind').stringValue;
-        var bindAsync = ConstantReader(annotation).read('bindAsync').boolValue;
+        var bindAsync = getAnnotation<BindAsync>(element) != null;
         _parseBindState(element,bindState,bindAsync);
       }else{
         throw Exception('Please use the "_" prefix to declare the action method:[${element.displayName}] !');
@@ -78,7 +78,6 @@ class BloXVisitor extends SimpleElementVisitor<void> {
   }
 
   void _parseBindState(MethodElement element, String bindState, bool bindAsync) {
-
     var params = element.parameters;
     var parameter = '';
     if (params.isNotEmpty) {

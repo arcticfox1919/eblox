@@ -17,8 +17,11 @@ class _SearchVModel extends Blox{
   @AsyncX(name: 'SongListState')
   SongListModel _songModel = SongListModel();
 
-  @ActionX(bind: 'SongListState',bindAsync: true)
-  Future<SongListModel> _search(String name){
-    return SearchService.search(name);
+  @bindAsync
+  @ActionX(bind: 'SongListState')
+  BloxAsyncTask<SongListModel> _search(String name){
+    return (){
+      return  SearchService.search(name);
+    };
   }
 }

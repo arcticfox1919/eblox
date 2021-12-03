@@ -38,7 +38,8 @@ class BloxTemplate {
         var getter = stateFields[m.bindState]!.name;
         if(m.isAsyncState){
           mtBuff.write('''
-              runZoned(()=>Future(() => super.${m.displayName}(${m.callParam})),
+              var task = super.${m.displayName}(${m.callParam});
+              runZoned(task,
                 zoneSpecification: ZoneSpecification(run: <R>(self, parent, zone, f) {
                 __$getter.status = BloxStatus.loading;
                 emit(__$getter.copy());
@@ -55,7 +56,7 @@ class BloxTemplate {
                   debugPrint(error.toString());
                   emit(__$getter.copy(errorMessage:error));
                 }));
-          return Future.value(_$getter);
+          return task;
           ''');
           mtBuff.writeln('}');
           mtBuff.writeln();
