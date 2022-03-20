@@ -1,49 +1,72 @@
-import 'package:get_it/get_it.dart';
+import 'package:eblox/eblox.dart';
+// import 'package:get_it/get_it.dart';
 
 abstract class Provider {
-  void put<T extends Object>(T dependency, {String? tag});
+  void inject<T extends Blox>(T dependency, {String? tag,bool shared});
 
-  T find<T extends Object>({String? tag});
+  T find<T extends Blox>({String? tag});
 
-  bool check<T extends Object>({T? instance, String? tag});
+  bool check<T extends Blox>({T? instance, String? tag});
 
-  bool delete<T extends Object>({T? instance, String? tag});
+  bool delete<T extends Blox>({T? instance, String? tag});
 }
 
-class SimpleProvider implements Provider {
-  factory SimpleProvider() => _instance ??= SimpleProvider._();
+class BloxProvider implements Provider {
 
-  static SimpleProvider? _instance;
 
-  SimpleProvider._();
+  factory BloxProvider() => _instance ??= const BloxProvider._();
+
+  static BloxProvider? _instance;
+
+  const BloxProvider._();
 
   static final Map<Symbol, _InstanceInfo> _single = {};
 
   @override
-  void put<T extends Object>(T dependency, {String? tag}) {
+  void inject<T extends Blox>(T dependency, {String? tag,bool shared=false}) {
     final key = _getKey(T, tag);
-    _single.putIfAbsent(key, () => _InstanceInfo<T>(dependency));
+    var instance = _InstanceInfo<T>(dependency);
+    if(shared){
+      if(_single.containsKey(key)){
+        instance = _single[key]! as _InstanceInfo<T>;
+        instance.incCount();
+      }else{
+        instance.isShared = true;
+        instance.incCount();
+        _single[key] = instance;
+      }
+    }else{
+      _single[key] = instance;
+    }
   }
 
   @override
-  T find<T extends Object>({String? tag}) {
+  T find<T extends Blox>({String? tag}) {
     final newKey = _getKey(T, tag);
     var info = _single[newKey];
 
     if (info?.value != null) {
       return info!.value;
     } else {
-      throw '"$T" not found. You need to call "Easy.put($T())""';
+      throw '"$T" not found. You need to call "BloxProvider.inject($T())""';
     }
   }
 
   @override
-  bool delete<T extends Object>({T? instance, String? tag}) {
-    final newKey = _getKey(T, tag);
-    if (!_single.containsKey(newKey)) {
+  bool delete<T extends Blox>({T? instance, String? tag}) {
+    final key = _getKey(T, tag);
+    if (!_single.containsKey(key)) {
       return false;
     }
-    _single.remove(newKey);
+
+    var info = _single[key];
+    if(info!.isShared){
+      info.decCount();
+    }
+
+    if(info.isReleased){
+      _single.remove(key);
+    }
     return true;
   }
 
@@ -52,8 +75,9 @@ class SimpleProvider implements Provider {
   }
 
   @override
-  bool check<T extends Object>({T? instance, String? tag}) {
-    throw UnimplementedError();
+  bool check<T extends Blox>({T? instance, String? tag}) {
+    final key = _getKey(T, tag);
+    return _single.containsKey(key);
   }
 }
 
@@ -61,37 +85,55 @@ class _InstanceInfo<T> {
   _InstanceInfo(this.value);
 
   T value;
+  int _refCount = 0;
+  bool isShared = false;
+
+  void incCount(){
+    _refCount ++;
+  }
+
+  void decCount(){
+    _refCount --;
+  }
+
+  bool get isReleased => _refCount == 0;
+
 }
 
-const BloxProvider I = BloxProvider();
+final It = BloxProvider();
 
-T $<T extends Object>({String? tag}) {
-  return I.find<T>(tag: tag);
+T $<T extends Blox>({String? tag}) {
+  return It.find<T>(tag: tag);
 }
 
-final getIt = GetIt.instance;
-
-class BloxProvider implements Provider {
-  const BloxProvider();
-
-  @override
-  bool delete<T extends Object>({T? instance, String? tag}) {
-    getIt.unregister<T>(instanceName: tag);
-    return true;
-  }
-
-  @override
-  T find<T extends Object>({String? tag}) {
-    return getIt.get<T>(instanceName: tag);
-  }
-
-  @override
-  void put<T extends Object>(T dependency, {String? tag}) {
-    getIt.registerSingleton<T>(dependency, instanceName: tag);
-  }
-
-  @override
-  bool check<T extends Object>({T? instance, String? tag}) {
-    return getIt.isRegistered<T>(instanceName: tag);
-  }
+void $$<T extends Blox>(BloxAction action,{String? tag}) {
+  var blox = It.find<T>(tag: tag);
+  blox.add(action);
 }
+
+// final getIt = GetIt.instance;
+
+// class BloxProvider implements Provider {
+//   const BloxProvider();
+//
+//   @override
+//   bool delete<T extends Blox>({T? instance, String? tag}) {
+//     getIt.unregister<T>(instanceName: tag);
+//     return true;
+//   }
+//
+//   @override
+//   T find<T extends Blox>({String? tag}) {
+//     return getIt.get<T>(instanceName: tag);
+//   }
+//
+//   @override
+//   void inject<T extends Blox>(T dependency, {String? tag,bool shared=false}) {
+//     getIt.registerSingleton<T>(dependency, instanceName: tag);
+//   }
+//
+//   @override
+//   bool check<T extends Blox>({T? instance, String? tag}) {
+//     return getIt.isRegistered<T>(instanceName: tag);
+//   }
+// }

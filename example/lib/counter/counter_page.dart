@@ -13,7 +13,7 @@ class CounterPage extends StatelessWidget {
     return Scaffold(
       body: SafeArea(
         child:BloxBuilder<CounterVModel,CounterState>(
-            create:()=>CounterVModel(),
+            inject:(injection)=> injection.inject(CounterVModel()),
             builder: (count) {
               return Center(
                 child: Column(
@@ -22,13 +22,13 @@ class CounterPage extends StatelessWidget {
                     Text("$count"),
                     ElevatedButton(
                       onPressed: () {
-                        AddAction().to<CounterVModel>();
+                        $$<CounterVModel>(AddAction());
                       },
                       child: const Text("+"),
                     ),
                     ElevatedButton(
                       onPressed: () {
-                        SubAction().to<CounterVModel>();
+                        $$<CounterVModel>(SubAction());
                       },
                       child: const Text("-"),
                     ),

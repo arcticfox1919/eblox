@@ -18,14 +18,14 @@ class ActionX{
     const ActionX({this.name,required this.bind});
 }
 
-class BindAsync{
-  const BindAsync();
+class AsyncBind{
+  const AsyncBind();
 }
 
-const bindAsync = BindAsync();
+const asyncBind = AsyncBind();
 
 class BloX {
   const BloX();
 }
 
-const bloX = BloX();
+const blox = BloX();

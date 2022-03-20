@@ -11,13 +11,16 @@ import 'package:flutter/cupertino.dart';
 
 part 'search_view_model.g.dart';
 
-@bloX
-class _SearchVModel extends Blox{
+@blox
+class SearchVModel with Blox{
+  SearchVModel._();
+  factory SearchVModel() = _SearchVModel;
+
 
   @AsyncX(name: 'SongListState')
   SongListModel _songModel = SongListModel();
 
-  @bindAsync
+  @asyncBind
   @ActionX(bind: 'SongListState')
   BloxAsyncTask<SongListModel> _search(String name){
     return (){

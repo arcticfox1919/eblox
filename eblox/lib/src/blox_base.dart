@@ -19,11 +19,7 @@ abstract class Blox {
   final StreamController<BloxAction> _actionController =
       StreamController.broadcast();
 
-  Blox() {
-    _onAction();
-  }
-
-  void _onAction() {
+  void onAction() {
     _actionController.stream.listen((action) {
       if (!handleAction(action)) {
         Type t = action.runtimeType;
@@ -49,6 +45,8 @@ abstract class Blox {
 
   bool handleAction(BloxAction action) => false;
 
+  void init(){}
+
   void add(BloxAction action) {
     if (_actionController.isClosed) return;
     _actionController.add(action);
@@ -71,16 +69,12 @@ class _BloxBase<T extends Blox> extends StatefulWidget {
   late final Blox blox;
   bool unpack;
 
-  _BloxBase({Key? key, T Function()? create, this.unpack = true})
+  _BloxBase({Key? key, void Function(BloxProvider injection)? inject, this.unpack = true})
       : super(key: key) {
-    if (I.check<T>()) {
-      blox = I.find<T>();
-    } else {
-      assert(create != null);
-      var _blox = create!();
-      I.put(_blox);
-      blox = _blox;
+    if(inject != null){
+      inject(It);
     }
+    blox = It.find<T>();
     stream = blox._stateController.stream;
   }
 
@@ -93,9 +87,7 @@ class _BloxBase<T extends Blox> extends StatefulWidget {
   }
 
   void dispose(){
-    if (I.check<T>()) {
-      I.delete<T>();
-    }
+    It.delete<T>();
   }
 
   @override
@@ -108,18 +100,18 @@ class _BloxBaseState extends State<_BloxBase> {
   @override
   void initState() {
     super.initState();
-    _subscribe();
+    subscribe();
   }
 
   @override
   void dispose() {
-    _unsubscribe();
+    unsubscribe();
     widget.blox.dispose();
     widget.dispose();
     super.dispose();
   }
 
-  void _subscribe() {
+  void subscribe() {
     if (widget.stream != null) {
       var stream = widget.stream!.where((state) {
         return widget.condition(state);
@@ -135,7 +127,7 @@ class _BloxBaseState extends State<_BloxBase> {
     }
   }
 
-  void _unsubscribe() {
+  void unsubscribe() {
     if (_subscription != null) {
       _subscription!.cancel();
       _subscription = null;
@@ -158,9 +150,9 @@ class MultiBuilder<T extends Blox> extends _BloxBase<T> {
       {Key? key,
       required this.filter,
       required this.builder,
-      T Function()? create,
+      void Function(BloxProvider injection)? inject,
       bool unpack = true})
-      : super(key: key, unpack: unpack, create: create) {
+      : super(key: key, unpack: unpack, inject: inject) {
     for (var type in filter()) {
       states[type] = blox._states[type]!;
     }
@@ -211,10 +203,10 @@ class BloxBuilder<T extends Blox, S extends BloxState> extends _BloxBase<T> {
 
   BloxBuilder(
       {Key? key,
-      T Function()? create,
+      void Function(BloxProvider injection)? inject,
       required this.builder,
       bool unpack = true})
-      : super(key: key, create: create, unpack: unpack) {
+      : super(key: key, inject: inject, unpack: unpack) {
     for (var state in blox._states.values) {
       if (state is S) currentState = state;
     }
@@ -238,4 +230,51 @@ class BloxBuilder<T extends Blox, S extends BloxState> extends _BloxBase<T> {
             ? [(currentState as BloxSingleState).data]
             : [currentState]);
   }
+}
+
+// ignore: must_be_immutable
+class BloxListener<T extends Blox, S extends BloxState> extends _BloxBase<T> {
+
+  Widget child;
+  void Function(S) listener;
+
+  BloxListener({Key? key, void Function(BloxProvider injection)? inject,required this.child ,required this.listener})
+      : super(key: key,inject: inject);
+
+  @override
+  void onListen(BloxState state) {
+    listener.call(state as S);
+  }
+
+  @override
+  bool condition(BloxState state) {
+    return state is S;
+  }
+
+  @override
+  Widget build() => child;
+
+  @override
+  _BloxBaseState createState() =>_BloxListenerState();
+}
+
+class _BloxListenerState extends _BloxBaseState{
+
+  @override
+  void subscribe() {
+    if (widget.stream != null) {
+      var stream = widget.stream!.where((state) {
+        return widget.condition(state);
+      });
+
+      widget.stream = stream;
+
+      _subscription = widget.stream!.listen((state) {
+        widget.onListen(state);
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.build();
 }

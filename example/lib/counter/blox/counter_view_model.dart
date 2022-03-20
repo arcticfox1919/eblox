@@ -6,20 +6,32 @@ import 'package:flutter/cupertino.dart';
 
 part 'counter_view_model.g.dart';
 
-@bloX
-class _CounterVModel extends Blox{
+@blox
+class CounterVModel with Blox,_$CounterVModel{
+  CounterVModel._();
+  factory CounterVModel() = _CounterVModel;
 
-  @StateX(name:'CounterState')
+  @override
+  void init() {
+
+  }
+
+  @StateX()
   int _counter = 0;
 
   @ActionX(bind: 'CounterState')
-  void _add() async{
+  bool _add(){
     _counter ++;
+    return true;
   }
 
   @ActionX(bind: 'CounterState')
-  void _sub(){
-    _counter--;
+  bool _sub(){
+    if(_counter > 0){
+      _counter--;
+      return true;
+    }
+    return false;
   }
 
   @override

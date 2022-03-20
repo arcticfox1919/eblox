@@ -14,25 +14,38 @@ class SubAction extends BloxAction {}
 // BloXGenerator
 // **************************************************************************
 
-class CounterVModel extends _CounterVModel {
-  CounterVModel() {
+class _CounterVModel extends CounterVModel {
+  _CounterVModel() : super._() {
     registerAction({AddAction: _add, SubAction: _sub});
     registerState({CounterState: counter});
+    onAction();
+    super.init();
   }
 
+  @override
   CounterState<int> get counter => CounterState<int>(_counter);
 
   @override
-  void _add() {
-    super._add();
-    emit(counter);
+  bool _add() {
+    bool r = super._add();
+    if (r) {
+      emit(counter);
+    }
+    return r;
   }
 
   @override
-  void _sub() {
-    super._sub();
-    emit(counter);
+  bool _sub() {
+    bool r = super._sub();
+    if (r) {
+      emit(counter);
+    }
+    return r;
   }
+}
+
+mixin _$CounterVModel {
+  CounterState<int> get counter => throw UnimplementedError("counter");
 }
 
 // **************************************************************************

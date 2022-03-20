@@ -7,25 +7,25 @@ void main(){
   const len = 10;
   group('Counter test', () {
     setUp(() {
-      I.put(CounterVModel());
+      It.inject(CounterVModel());
     });
 
     tearDown(() {
-      I.delete<CounterVModel>();
+      It.delete<CounterVModel>();
     });
 
     test('test add counter', () {
       for(var i = 0;i<len;i++){
-        AddAction().to<CounterVModel>();
+        $$<CounterVModel>(AddAction());
       }
       expect(Future(() => $<CounterVModel>().counter.data), completion(len));
     });
 
     test('test sub counter', () {
       for(var i = 0;i<len;i++){
-        SubAction().to<CounterVModel>();
+        $$<CounterVModel>(SubAction());
       }
-      expect(Future(() => $<CounterVModel>().counter.data), completion(-10));
+      expect(Future(() => $<CounterVModel>().counter.data), completion(0));
     });
   });
 }

@@ -25,14 +25,14 @@ class SearchPage extends StatelessWidget {
                 icon: const Icon(Icons.search_rounded),
                 onPressed: (){
                   if(_controller.text.isNotEmpty) {
-                    SearchAction(_controller.text).to<SearchVModel>();
+                    $$<SearchVModel>(SearchAction(_controller.text));
                   }
                 },
               )),
             ),
             Flexible(
                 child: BloxView<SearchVModel, SongListState<SongListModel>>(
-              create: () => SearchVModel(),
+              inject:(injection)=> injection.inject(SearchVModel()),
               onLoading: () => const Center(child: CircularProgressIndicator()),
               onEmpty: ()=> const Center(child: Text("Empty")),
               builder: (state) {

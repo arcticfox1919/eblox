@@ -14,10 +14,12 @@ class SearchAction extends BloxAction {
 // BloXGenerator
 // **************************************************************************
 
-class SearchVModel extends _SearchVModel {
-  SearchVModel() {
+class _SearchVModel extends SearchVModel {
+  _SearchVModel() : super._() {
     registerAction({SearchAction: _search});
     registerState({SongListState: songModel});
+    onAction();
+    super.init();
   }
 
   final SongListState<SongListModel> __songModel =

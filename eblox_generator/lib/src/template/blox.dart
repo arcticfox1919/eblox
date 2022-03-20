@@ -6,25 +6,31 @@ class BloxTemplate {
   final Map<String, String> actionFields;
   final Map<String, StateFieldInfo> stateFields;
   List<ActionMethodInfo> actionMethods;
+  bool isMixin;
 
   BloxTemplate(
-      this.className, this.actionMethods, this.actionFields, this.stateFields);
+      this.className, this.actionMethods, this.actionFields, this.stateFields,this.isMixin);
 
   String get name => className;
 
   @override
   String toString() {
-    var newClzName = className.replaceFirst('_', '');
+    var newClzName = '_$className';
 
     var stateBuff = StringBuffer();
+    var mixinField = StringBuffer();
     if (stateFields.isNotEmpty) {
       stateFields.forEach((type, info) {
         if(info.isAsync){
           stateBuff.writeln('final $type<${info.valueType}> __${info.name} = $type<${info.valueType}>(${info.initialValue});');
+          if(isMixin) stateBuff.writeln('@override');
           stateBuff.writeln('$type<${info.valueType}> get ${info.name} => __${info.name}.copy(data:_${info.name});');
         }else{
+          if(isMixin) stateBuff.writeln('@override');
           stateBuff.writeln('$type<${info.valueType}> get ${info.name} => $type<${info.valueType}>(_${info.name});');
         }
+
+        mixinField.writeln('$type<${info.valueType}> get ${info.name} => throw UnimplementedError("${info.name}");');
       });
     }
 
@@ -61,8 +67,11 @@ class BloxTemplate {
           mtBuff.writeln('}');
           mtBuff.writeln();
         }else{
-          mtBuff.writeln('super.${m.displayName}(${m.callParam});');
+          mtBuff.writeln('bool r = super.${m.displayName}(${m.callParam});');
+          mtBuff.writeln('if(r){');
           mtBuff.writeln('emit($getter);');
+          mtBuff.writeln('}');
+          mtBuff.writeln('return r;');
           mtBuff.writeln('}');
           mtBuff.writeln();
         }
@@ -73,18 +82,30 @@ class BloxTemplate {
         actionFields.isNotEmpty ? 'registerAction($actionFields);' : '';
     var registerState =
         stateFields.isNotEmpty ? 'registerState(${stateFields.map((k, v) => MapEntry(k, v.name))});' : '';
+
+
+    var mixinBlock = isMixin ? '''
+        mixin _\$$className{
+          $mixinField
+        }
+    ''' : '';
+
     return '''
     class $newClzName extends $className{
     
-      $newClzName(){
+      $newClzName():super._(){
           $registerAction
           $registerState
+          onAction();
+          super.init();
       }
     
       $stateBuff
       
       $mtBuff
     }
+    
+    $mixinBlock
     ''';
   }
 }

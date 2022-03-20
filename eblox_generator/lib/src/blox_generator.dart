@@ -1,5 +1,8 @@
 
 
+import 'dart:ffi';
+
+import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/visitor.dart';
 import 'package:analyzer/dart/ast/ast.dart';
@@ -18,19 +21,27 @@ class BloXVisitor extends SimpleElementVisitor<void> {
 
   BloXVisitor(this.buildStep);
 
-  String? className;
+  String className='';
   BuildStep buildStep;
 
   Map<String, String> actionFields = {};
   Map<String, StateFieldInfo> stateFields = {};
   List<ActionMethodInfo> actionMethods = [];
+  BloXAstVisitor astVisitor = BloXAstVisitor();
+  bool isMixin = false;
+
+  @override
+  void visitClassElement(ClassElement element) {
+    getAstFromElement(element).accept(astVisitor);
+
+    element.visitChildren(this);
+  }
 
   @override
   void visitConstructorElement(ConstructorElement element) {
     className = element.type.returnType.toString();
-    if(!className!.startsWith('_')){
-      throw Exception(
-          'Please use the "_" prefix to declare the [$className] !');
+    if(astVisitor.mixinTypes.contains('_\$$className')){
+      isMixin = true;
     }
   }
 
@@ -69,7 +80,7 @@ class BloXVisitor extends SimpleElementVisitor<void> {
 
         actionFields[actionType] = '${element.displayName}';
         var bindState = ConstantReader(annotation).read('bind').stringValue;
-        var bindAsync = getAnnotation<BindAsync>(element) != null;
+        var bindAsync = getAnnotation<AsyncBind>(element) != null;
         _parseBindState(element,bindState,bindAsync);
       }else{
         throw Exception('Please use the "_" prefix to declare the action method:[${element.displayName}] !');
@@ -101,6 +112,22 @@ AstNode getAstFromElement(Element element) {
   return (parsedLibResult as ParsedLibraryResult).getElementDeclaration(element)!.node;
 }
 
+
+class BloXAstVisitor extends SimpleAstVisitor<void>{
+
+  List<String> mixinTypes = [];
+
+  @override
+  void visitClassDeclaration(ClassDeclaration node) {
+    var e = node.withClause?.mixinTypes2;
+    if(e != null){
+      e.forEach((type) {
+        mixinTypes.add(type.name.name);
+      });
+    }
+  }
+}
+
 class StateFieldInfo{
   String type;
   String name;
@@ -128,9 +155,10 @@ class BloXGenerator extends GeneratorForAnnotation<BloX>{
   String generateForAnnotatedElement(
       Element element, ConstantReader annotation, BuildStep buildStep) {
     final visitor = BloXVisitor(buildStep);
-    element.visitChildren(visitor);
-    var template = BloxTemplate(visitor.className!, visitor.actionMethods,
-        visitor.actionFields,visitor.stateFields);
+    element.accept(visitor);
+    var template = BloxTemplate(visitor.className, visitor.actionMethods,
+        visitor.actionFields,visitor.stateFields,visitor.isMixin);
+
     return template.toString();
   }
 }

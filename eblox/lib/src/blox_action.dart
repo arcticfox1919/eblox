@@ -13,8 +13,4 @@ abstract class BloxAction {
   const BloxAction.argsByPosition(this.positionalArguments)
       : namedArguments = null;
 
-  void to<T extends Blox>() {
-    var blox = I.find<T>();
-    blox.add(this);
-  }
 }

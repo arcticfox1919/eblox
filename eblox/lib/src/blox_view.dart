@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 
+import '../eblox.dart';
 import 'blox_base.dart';
 import 'blox_state.dart';
 
@@ -9,13 +10,13 @@ class BloxView<T extends Blox, S extends BloxAsyncState>
   final Widget Function()? onEmpty;
   final Widget Function(dynamic message)? onError;
   final Widget Function(S state) builder;
-  final T Function()? create;
+  final void Function(BloxProvider injection)? inject;
 
   const BloxView({Key? key,
     this.onLoading,
     this.onEmpty,
     this.onError,
-    this.create,
+    this.inject,
     required this.builder})
       : super(key: key);
 
@@ -25,7 +26,7 @@ class BloxView<T extends Blox, S extends BloxAsyncState>
   Widget build(BuildContext context) {
     late BloxBuilder bloxBuilder;
     bloxBuilder = BloxBuilder<T, S>(
-        create: create,
+        inject: inject,
         builder: (state) {
           if (state is BloxAsyncState) {
             var status = state.status;
