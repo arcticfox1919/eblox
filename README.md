@@ -2,7 +2,7 @@
 
 An easy Flutter state management library.It is similar to Bloc, but it uses a lot of annotations and separates business logic from UI through the concepts of **Action** and **State**.
 
-![](https://gitee.com/arcticfox1919/ImageHosting/raw/master/img/2021-12-02-001.png)
+![](https://picturehost.oss-cn-shenzhen.aliyuncs.com/img/2021-12-02-001.png)
 
 **Simpler, more reliable, easier to test !**
 
@@ -222,7 +222,7 @@ class SearchPage extends StatelessWidget {
 
 `BloxView` provides `onLoading`, `onEmpty`, `onError`,`builder` to handle the UI display during and after loading.
 
-![](https://gitee.com/arcticfox1919/ImageHosting/raw/master/img/GIF2021-12-3_1-36-46.gif)
+![](https://picturehost.oss-cn-shenzhen.aliyuncs.com/img/GIF2021-12-3_1-36-46.gif)
 
 Note that if you want `onEmpty` to be valid, then your custom data type should mixin `BloxData`:
 
